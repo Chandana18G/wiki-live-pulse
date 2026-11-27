@@ -1,7 +1,7 @@
 # Wikipedia Live Pulse
 
 Real-time analytics of Wikipedia edits on Google Cloud Platform.
-Course project for *Cloud Computing and Data Architectures*, SRH Hochschule Heidelberg, 2026.
+Course project for *Cloud Computing and Data Architectures*, 2026.
 
 **Team:** Chandana (ingestion, stream processing, spike detection) · Dinesh (gold SQL, dashboard, deployment)
 

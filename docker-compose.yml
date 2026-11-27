@@ -1,0 +1,38 @@
+# Local stack: Pub/Sub emulator + producer + a peek subscriber.
+# Nothing here talks to Google Cloud.   Run:  docker compose up --build
+services:
+  pubsub:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=local-project
+    ports:
+      - "8085:8085"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8085"]
+      interval: 5s
+      retries: 20
+
+  producer:
+    build: ./producer
+    environment:
+      PUBSUB_EMULATOR_HOST: pubsub:8085
+      PROJECT_ID: local-project
+      TOPIC_ID: wiki-edits
+      CREATE_TOPIC: "1"
+      LOG_EVERY: "50"
+    ports:
+      - "8080:8080"        # health check: http://localhost:8080
+    depends_on:
+      pubsub:
+        condition: service_healthy
+
+  peek:
+    build: ./producer      # same image: it already has the Pub/Sub library
+    command: python peek_subscriber.py
+    volumes:
+      - ./scripts/peek_subscriber.py:/app/peek_subscriber.py:ro
+    environment:
+      PUBSUB_EMULATOR_HOST: pubsub:8085
+      PROJECT_ID: local-project
+      TOPIC_ID: wiki-edits
+    depends_on:
+      - producer
